@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="fo">
+<head>
+  <meta charset="UTF-8" />
+  <title>VIT BÓLKA ORÐ – ÚTBÝRING</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Boogaloo&display=swap');
+    body {
+      font-family: 'Boogaloo', cursive;
+      text-transform: uppercase;
+      background-color: #f0f0f0;
+      padding: 20px;
+      text-align: center;
+      color: #333;
+    }
+    .title { font-size: 2.4em; margin-bottom: 10px; color: #4CAF50; }
+    .controls { margin-bottom: 20px; }
+    .controls button {
+      padding: 10px 20px;
+      margin: 5px;
+      font-size: 1em;
+      border: 2px solid #4CAF50;
+      background-color: white;
+      color: #4CAF50;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .timer { font-size: 1.4em; margin-top: 10px; }
+    .categories {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    .category {
+      width: 30%;
+      min-height: 150px;
+      background-color: #fff;
+      border: 2px dashed #4CAF50;
+      border-radius: 8px;
+      padding: 10px;
+    }
+    .category-title {
+      margin-bottom: 10px;
+      font-size: 1.2em;
+      color: #4CAF50;
+    }
+    .words {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      padding: 10px;
+      background-color: #fff;
+      border-radius: 8px;
+      min-height: 100px;
+    }
+    .word {
+      padding: 10px 20px;
+      border: 2px solid #4CAF50;
+      border-radius: 8px;
+      background-color: #fff;
+      color: #333;
+      cursor: grab;
+      font-size: 1.2em;
+    }
+    .word.correct { background-color: #4CAF50; color: #fff; }
+    .word.incorrect { background-color: grey; color: #fff; }
+    .progress-container {
+      width: 80%;
+      margin: 20px auto;
+      background-color: #ddd;
+      border-radius: 10px;
+      height: 30px;
+      position: relative;
+    }
+    .progress-bar {
+      background-color: #4CAF50;
+      height: 100%;
+      width: 0%;
+      border-radius: 10px;
+      transition: width 0.3s ease;
+    }
+    .progress-text {
+      position: absolute;
+      top: 5px;
+      width: 100%;
+      text-align: center;
+      font-weight: bold;
+      color: #333;
+    }
+    .message {
+      margin-top: 20px;
+      font-size: 1.4em;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <div class="title">VIT BÓLKA ORÐ</div>
+<div class="controls">
+  <h3 style="margin-bottom:5px;">TAK TÍÐ</h3>
+  <button onclick="startGame()">BYRJA</button>
+  <button onclick="stopTimer()">STEÐGA</button>
+  <button onclick="startGame()">BYRJA AV NÝGGJUM</button>
+
+  <h3 style="margin-top:20px; margin-bottom:5px;">NIÐURTELJING</h3>
+  <button onclick="startGameWithCountdown(30)">30 SEKUND</button>
+  <button onclick="startGameWithCountdown(60)">1 MINUTTUR</button>
+  <button onclick="startGameWithCountdown(120)">2 MINUTTIR</button>
+  <button onclick="startGameWithCountdown(180)">3 MINUTTIR</button>
+
+  <div class="timer" id="timer">00:00</div>
+</div>
+  <div class="categories">
+    <div class="category" id="frukt-og-gronmeti" ondrop="drop(event)" ondragover="allowDrop(event)">
+      <div class="category-title">FRUKT OG GRØNMETI</div>
+    </div>
+    <div class="category" id="bakstur-og-ymiskt-sott" ondrop="drop(event)" ondragover="allowDrop(event)">
+      <div class="category-title">BAKSTUR OG YMISKT SØTT</div>
+    </div>
+    <div class="category" id="drykkir" ondrop="drop(event)" ondragover="allowDrop(event)">
+      <div class="category-title">DRYKKIR</div>
+    </div>
+  </div>
+
+  <div class="words" id="words"></div>
+
+  <div class="progress-container">
+    <div class="progress-bar" id="progress-bar"></div>
+    <div class="progress-text" id="progress-text">0 / 25 orð rætt</div>
+  </div>
+
+  <div class="message" id="message"></div>
+  <script>
+    const wordsData = [
+      { word: "SITRÓN", category: "frukt-og-gronmeti" },
+      { word: "SÚREPLI", category: "frukt-og-gronmeti" },
+      { word: "BANAN", category: "frukt-og-gronmeti" },
+      { word: "EPLI", category: "frukt-og-gronmeti" },
+      { word: "LEYKUR", category: "frukt-og-gronmeti" },
+      { word: "HVÍTLEYKUR", category: "frukt-og-gronmeti" },
+      { word: "APPILSIN", category: "frukt-og-gronmeti" },
+      { word: "PERA", category: "frukt-og-gronmeti" },
+      { word: "VÍNDRÚVUR", category: "frukt-og-gronmeti" },
+      { word: "JARÐBER", category: "frukt-og-gronmeti" },
+      { word: "MJÓLK", category: "drykkir" },
+      { word: "DJÚS", category: "drykkir" },
+      { word: "ORKUDRYKKUR", category: "drykkir" },
+      { word: "HAVRAMJÓLK", category: "drykkir" },
+      { word: "MANDLUMJÓLK", category: "drykkir" },
+      { word: "SAFT", category: "drykkir" },
+      { word: "SODAVATN", category: "drykkir" },
+      { word: "BREYÐ", category: "bakstur-og-ymiskt-sott" },
+      { word: "KNEKKBREYÐ", category: "bakstur-og-ymiskt-sott" },
+      { word: "RULLUKAKA", category: "bakstur-og-ymiskt-sott" },
+      { word: "SMÁKØKUR", category: "bakstur-og-ymiskt-sott" },
+      { word: "KEKS", category: "bakstur-og-ymiskt-sott" },
+      { word: "SJOKULÁTA", category: "bakstur-og-ymiskt-sott" },
+      { word: "GUMMIBOMM", category: "bakstur-og-ymiskt-sott" },
+      { word: "KARAMELLUR", category: "bakstur-og-ymiskt-sott" }
+    ];
+
+    let timer;
+    let seconds = 0;
+    let minutes = 0;
+    let countdownMode = false;
+    let countdownLimit = 0;
+
+    function shuffle(array) {
+      return array.sort(() => Math.random() - 0.5);
+    }
+
+    function startGame() {
+      countdownMode = false;
+      setupGame();
+    }
+
+    function startGameWithCountdown(timeLimit) {
+      countdownMode = true;
+      countdownLimit = timeLimit;
+      setupGame();
+    }
+
+    function setupGame() {
+      const container = document.getElementById("words");
+      const shuffled = shuffle([...wordsData]);
+      container.innerHTML = "";
+      shuffled.forEach(item => {
+        const word = document.createElement("div");
+        word.textContent = item.word;
+        word.className = "word";
+        word.draggable = true;
+        word.addEventListener("dragstart", drag);
+        container.appendChild(word);
+      });
+      document.getElementById("message").textContent = "";
+      updateProgress(0);
+      resetTimer();
+      startTimer();
+    }
+
+    function drag(event) {
+      event.dataTransfer.setData("text", event.target.textContent);
+    }
+
+    function allowDrop(event) {
+      event.preventDefault();
+    }
+
+    function drop(event) {
+      event.preventDefault();
+      const data = event.dataTransfer.getData("text");
+      const wordElement = [...document.querySelectorAll(".word")].find(w => w.textContent === data);
+      const categoryID = event.currentTarget.id;
+      const correctCategory = wordsData.find(w => w.word === data)?.category;
+
+      if (categoryID === correctCategory) {
+        wordElement.classList.add("correct");
+        wordElement.classList.remove("incorrect");
+        event.currentTarget.appendChild(wordElement);
+        document.getElementById("message").textContent = "";
+      } else {
+        wordElement.classList.add("incorrect");
+        document.getElementById("message").textContent = "IKKI HEILT RÆTT, ROYN UMAFTUR.";
+      }
+
+      checkCompletion();
+    }
+
+    function checkCompletion() {
+      const correctWords = document.querySelectorAll(".word.correct").length;
+      const totalWords = wordsData.length;
+      const progress = Math.round((correctWords / totalWords) * 100);
+      document.getElementById("progress-bar").style.width = `${progress}%`;
+      document.getElementById("progress-text").textContent = `${correctWords} / ${totalWords} orð rætt`;
+
+      if (correctWords === totalWords) {
+        document.getElementById("message").textContent = "FRÁLÍKT! TÚ HEVUR BÓLKAÐ ØLL ORÐINI RÆTT!";
+        stopTimer();
+      }
+    }
+
+    function updateProgress(count) {
+      const totalWords = wordsData.length;
+      const progress = Math.round((count / totalWords) * 100);
+      document.getElementById("progress-bar").style.width = `${progress}%`;
+      document.getElementById("progress-text").textContent = `${count} / ${totalWords} orð rætt`;
+    }
+
+    function resetTimer() {
+      clearInterval(timer);
+      seconds = 0;
+      minutes = 0;
+      document.getElementById("timer").textContent = "00:00";
+    }
+
+    function startTimer() {
+      clearInterval(timer);
+      if (countdownMode) {
+        let remaining = countdownLimit;
+        timer = setInterval(() => {
+          remaining--;
+          const min = Math.floor(remaining / 60);
+          const sec = remaining % 60;
+          document.getElementById("timer").textContent =
+            `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+          if (remaining <= 0) {
+            clearInterval(timer);
+            document.getElementById("message").textContent = "TÍÐIN ER FARIN!";
+          }
+        }, 1000);
+      } else {
+        timer = setInterval(() => {
+          seconds++;
+          if (seconds === 60) {
+            seconds = 0;
+            minutes++;
+          }
+          document.getElementById("timer").textContent =
+            `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }, 1000);
+      }
+    }
+
+    function stopTimer() {
+      clearInterval(timer);
+    }
+  </script>
+</body>
+</html>
