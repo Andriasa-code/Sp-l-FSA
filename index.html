@@ -23,19 +23,24 @@
             margin-bottom: 24px;
             color: #4CAF50;
             text-transform: uppercase;
+            text-align: center;
         }
-        .alphabet {
-            display: grid;
-            grid-template-columns: repeat(6, 1fr);
-            gap: 10px;
-            margin-bottom: 24px;
+       .alphabet {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr); /* 6 equal columns for uniform layout */
+    gap: 12px;
+    margin-bottom: 24px;
+    width: 90%;
+    max-width: 540px; /* control overall layout */
+
         }
         .letter {
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 100px;
-            height: 100px;
+            width: 100%;
+            padding-top: 100%;
+            position: relative;
             font-size: 3em;
             text-align: center;
             border: 2px solid #4CAF50;
@@ -46,6 +51,18 @@
             color: #333;
             text-transform: uppercase;
         }
+        .letter::before {
+            content: '';
+            display: block;
+            padding-top: 100%;
+
+        }
+        .letter > span {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
         .letter.correct {
             background-color: #4CAF50;
             color: #fff;
@@ -54,10 +71,20 @@
             background-color: grey;
             color: #fff;
         }
+.letter.diphthong {
+    color: orange;
+    border-color: orange;
+}
+
+.letter.diphthong.correct {
+    background-color: orange;
+    color: white;
+}
         .message {
             font-size: 1.44em;
             color: #333;
             text-transform: uppercase;
+            text-align: center;
         }
         .next-button {
             margin-top: 12px;
@@ -79,6 +106,7 @@
             font-size: 1.44em;
             color: #4CAF50;
             text-transform: uppercase;
+            text-align: center;
         }
         .top-left {
             position: absolute;
@@ -110,7 +138,7 @@
     <div class="message" id="message"></div>
     <div class="correct-letters" id="correct-letters"></div>
     <script>
-        const faroeseAlphabet = ["A", "Á", "B", "D", "Ð", "E", "F", "G", "H", "I", "Í", "J", "K", "L", "M", "N", "O", "Ó", "P", "R", "S", "T", "U", "Ú", "V", "Y", "Ý", "Æ", "Ø"];
+        const faroeseAlphabet = ["A", "Á", "B", "D", "Ð", "E", "F", "G", "H", "I", "Í", "J", "K", "L", "M", "N", "O", "Ó", "P", "R", "S", "T", "U", "Ú", "V", "Y", "Ý", "Æ", "Ø", "EI", "EY", "OY"];
         let shuffledAlphabet = [];
         let currentLetterIndex = 0;
         const correctLetters = [];
@@ -126,17 +154,18 @@
             return array;
         }
 
-        function displayAlphabet() {
-            const alphabetContainer = document.getElementById('alphabet');
-            alphabetContainer.innerHTML = '';
-            shuffledAlphabet.forEach(letter => {
-                const letterElement = document.createElement('div');
-                letterElement.textContent = letter;
-                letterElement.classList.add('letter');
-                letterElement.addEventListener('click', () => guessLetter(letter, letterElement));
-                alphabetContainer.appendChild(letterElement);
-            });
-        }
+    function displayAlphabet() {
+    const alphabetContainer = document.getElementById('alphabet');
+    alphabetContainer.innerHTML = '';
+
+    shuffledAlphabet.forEach((letter, index) => {
+        const letterElement = document.createElement('div');
+        letterElement.classList.add('letter');
+        letterElement.innerHTML = `<span>${letter}</span>`;
+        letterElement.addEventListener('click', () => guessLetter(letter, letterElement));
+        alphabetContainer.appendChild(letterElement);
+    });
+}
 
         function guessLetter(letter, letterElement) {
             if (letter === faroeseAlphabet[currentLetterIndex]) {
